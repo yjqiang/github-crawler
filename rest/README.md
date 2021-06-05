@@ -1,0 +1,2 @@
+1. [The difference between v3 and v4 is fundamental: v3 is RESTful, while v4 uses Facebook's GraphQL paradigm.](https://www.reddit.com/r/github/comments/bny3yp/github_api_v3_vs_v4_for_java/)
+1. [search api 仅返回前 1000 个数据](https://stackoverflow.com/questions/61810553/how-to-get-more-than-1000-search-results-with-api-github)
