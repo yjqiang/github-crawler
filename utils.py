@@ -21,3 +21,8 @@ def toml_load(path: str) -> Any:
 def save_json(path: str, data: dict) -> None:
     with open(path, 'w+', encoding='utf8') as f:
         f.write(json.dumps(data, indent=4))
+
+
+def open_json(path: str) -> Any:
+    with open(path, encoding='utf8') as f:
+        return json.load(f)
