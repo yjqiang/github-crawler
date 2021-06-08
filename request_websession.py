@@ -37,6 +37,8 @@ class WebSession:
                         return parse_rsp(rsp)
                     elif rsp.status_code == 404:
                         return None
+                    elif rsp.status_code == 403:  # 一般是 rating limit
+                        return None
                     else:
                         print(f'STATUS_CODE ERROR: {rsp.status_code} {rsp.text}')
                         sys.exit(-1)
