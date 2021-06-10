@@ -43,6 +43,24 @@ class ListStargazersHandler(ApiHandler):  # 查看某仓库的关注者
         }
 
 
+class DownloadRepoZipHandler0(ApiHandler):  # 下载 zip
+    def __init__(self, api_token: str, username: str, repo_name: str):
+        super().__init__(api_token)
+        self.url = f'https://api.github.com/repos/{username}/{repo_name}/zipball/master'
+        self.headers = {
+            'Authorization': 'token ' + api_token,
+        }
+
+
+class DownloadRepoZipHandler1(ApiHandler):  # 下载 zip
+    def __init__(self, api_token: str, username: str, repo_name: str):
+        super().__init__(api_token)
+        self.url = f'https://api.github.com/repos/{username}/{repo_name}/zipball/main'
+        self.headers = {
+            'Authorization': 'token ' + api_token,
+        }
+
+
 class Handlers:
     def __init__(self, handler, api_tokens: list[str], *args, **kwargs):
         self.handlers = [handler(api_token, *args, **kwargs) for api_token in api_tokens]
