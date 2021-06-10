@@ -45,6 +45,8 @@ class WebSession:
                     elif rsp.status == 404:
                         return None
                     elif rsp.status == 403:  # 一般是 rating limit
+                        await asyncio.sleep(10)
+                    elif rsp.status == 422:  # The listed users and repositories cannot be searched either because the resources do not exist or you do not have permission to view them.
                         return None
                     else:
                         print(f'STATUS_CODE ERROR: {url} {rsp.status} {rsp.text} {kwargs}')
