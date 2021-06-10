@@ -5,7 +5,7 @@ from dataclasses import asdict
 from handle_curl.parse_curl import parse_curl
 
 
-def rewrite(line: str) -> dict:
+def rewrite(line: str) -> list[dict]:
     list_command = shlex.split(line)
     list_command = [word.strip() for word in list_command]
 
@@ -19,12 +19,12 @@ def rewrite(line: str) -> dict:
     list_list_command.append(list_command[pre_index:])
 
     print(list_list_command)
-    curl = parse_curl(list_list_command[0])
-    return asdict(curl)
+    return [asdict(parse_curl(list_command)) for list_command in list_list_command]
 
 
 if __name__ == "__main__":
     with open('curl.txt') as f:
         result = rewrite(f.readlines()[0])
+
     with open('curl.json', 'w+', encoding='utf8') as f:
         f.write(json.dumps(result, indent=4))
