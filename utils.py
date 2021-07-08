@@ -1,5 +1,6 @@
 import json
 from typing import Any
+import os
 
 import toml
 
@@ -26,3 +27,12 @@ def save_json(path: str, data: dict) -> None:
 def open_json(path: str) -> Any:
     with open(path, encoding='utf8') as f:
         return json.load(f)
+
+
+def get_all_files(path: str) -> list[str]:
+    result = []
+    for root, dirs, files in os.walk(path):
+        for filename in files:
+            file_path = os.path.join(root, filename)
+            result.append(file_path)
+    return result
