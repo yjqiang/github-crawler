@@ -65,7 +65,7 @@ class Crawler:
         """
         handlers = Handlers(ListStargazersHandler, api_tokens=API_TOKENS, username=username, repo_name=repo_name)
         results = []
-        for page in range(1, 11):
+        for page in range(1, 21):
             handler = handlers.choice()
             handler.params['page'] = page
             response = await self.session.request_json('GET', url=handler.url, params=handler.params, headers=handler.headers)
@@ -107,25 +107,28 @@ async def main():
     crawler = Crawler(None)
     todo_jobs_queue = asyncio.Queue()
 
+    init_file_path = 'crawler/data_init.json'
+    result_file_path = 'crawler/data.json'
+
     if not os.path.isfile('crawler/data.json'):  # 是个存在的文件；如果存在说明已经有了初始化的数据了
         # 初始化（可以看作是第 0 层的递归深度结果）
-        if not os.path.isfile('crawler/data0.json'):  # 是个存在的文件
+        if not os.path.isfile(init_file_path):  # 是个存在的文件
             results = await crawler.search_code('class nn.module in:file extension:py')  # 搜索 Github 所有仓库中，含有某关键词的仓库代码
-            utils.save_json('crawler/data0.json', {'results': results})
+            utils.save_json(init_file_path, {'results': results})
         else:
-            results = utils.open_json('crawler/data0.json')['results']
+            results = utils.open_json(init_file_path)['results']
 
         list_todo_jobs = list(set(item['owner']['name'] for item in results))  # 还未处理的“新”用户
         set_users = set(list_todo_jobs)  # 已经完成 handler_one_round 的 user 集合 + todo_jobs（用于任务执行去重）
         list_results = []  # 截止目前为止搜到的仓库
 
-        utils.save_json('crawler/data.json', {
+        utils.save_json(result_file_path, {
             'list_todo_jobs': list_todo_jobs,
             'set_users': list(set_users),
             'list_results': list_results,
         })
     else:
-        cur_result = utils.open_json('crawler/data.json')
+        cur_result = utils.open_json(result_file_path)
         list_todo_jobs = cur_result['list_todo_jobs']  # 还未处理的“新”用户
         set_users = set(cur_result['set_users'])  # 已经完成 handler_one_round 的 user 集合 + todo_jobs（用于任务执行去重）
         list_results = cur_result['list_results']  # 截止目前为止搜到的仓库
@@ -134,7 +137,7 @@ async def main():
         await todo_jobs_queue.put(todo_job)
     crawler.list_results = list_results
 
-    while len(crawler.list_results) < 10000:
+    while len(crawler.list_results) < 100000:
         print(f'PREPARING and cur_result: {len(crawler.list_results)}')
         # 通过仓库的 followers 查找有机器学习仓库的用户
 
@@ -164,7 +167,7 @@ async def main():
     list_todo_jobs = []
     while not todo_jobs_queue.empty():
         list_todo_jobs.append(await todo_jobs_queue.get())
-    utils.save_json(f'crawler/data.json', {
+    utils.save_json(result_file_path, {
         'list_todo_jobs': list_todo_jobs,
         'set_users': list(set_users),
         'list_results': crawler.list_results,
