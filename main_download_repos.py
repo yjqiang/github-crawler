@@ -6,14 +6,15 @@ import re
 
 from aiohttp_websession import WebSession
 import utils
-from crawler.handlers import Handlers, DownloadRepoZipHandler0, DownloadRepoZipHandler1
+from crawler.handlers import Users, DownloadRepoZipHandler0, DownloadRepoZipHandler1
 
 # To satisfy that need, the GitHub Search API provides up to 1,000 results for each search.
 # https://stackoverflow.com/questions/61810553/how-to-get-more-than-1000-search-results-with-api-github
 
 # 配置文件（私有）
 conf = utils.toml_load('conf/conf.toml')
-API_TOKENS = [item['api_token'] for item in conf['users']]
+api_tokens = [item['api_token'] for item in conf['users']]
+users = Users(api_tokens)
 
 
 class Crawler:
@@ -32,12 +33,12 @@ class Crawler:
         username = match_result.group(1)
         repo_name = match_result.group(2)
 
-        handlers = Handlers(DownloadRepoZipHandler0, api_tokens=API_TOKENS, username=username, repo_name=repo_name)  # master branch
-        handler = handlers.choice()
+        handler = DownloadRepoZipHandler0(username=username, repo_name=repo_name)  # master branch
+        users.equip_1_handler(handler)  # 代入一个用户
         data = await self.session.request_stream('GET', url=handler.url, params=handler.params, headers=handler.headers)
         if data is None:
-            handlers = Handlers(DownloadRepoZipHandler1, api_tokens=API_TOKENS, username=username, repo_name=repo_name)  # main branch
-            handler = handlers.choice()
+            handler = DownloadRepoZipHandler1(username=username, repo_name=repo_name)  # main branch
+            users.equip_1_handler(handler)  # 代入一个用户
             data = await self.session.request_stream('GET', url=handler.url, params=handler.params, headers=handler.headers)
 
         if data is not None:

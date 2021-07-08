@@ -8,14 +8,15 @@ from typing import Optional
 
 from aiohttp_websession import WebSession
 import utils
-from crawler.handlers import Handlers, SearchCodeHandler, ListStargazersHandler
+from crawler.handlers import Users, SearchCodeHandler, ListStargazersHandler
 
 # To satisfy that need, the GitHub Search API provides up to 1,000 results for each search.
 # https://stackoverflow.com/questions/61810553/how-to-get-more-than-1000-search-results-with-api-github
 
 # 配置文件（私有）
 conf = utils.toml_load('conf/conf.toml')
-API_TOKENS = [item['api_token'] for item in conf['users']]
+api_tokens = [item['api_token'] for item in conf['users']]
+users = Users(api_tokens)
 
 
 class Crawler:
@@ -28,10 +29,10 @@ class Crawler:
         搜索代码
         :return:
         """
-        handlers = Handlers(SearchCodeHandler, api_tokens=API_TOKENS, query=query)
+        handler = SearchCodeHandler(query=query)
         results = []
         for page in range(1, 11):
-            handler = handlers.choice()
+            users.equip_1_handler(handler)  # 代入一个用户
             handler.params['page'] = page
 
             response = await self.session.request_json('GET', url=handler.url, params=handler.params, headers=handler.headers)
@@ -63,10 +64,10 @@ class Crawler:
         :param username:
         :return:
         """
-        handlers = Handlers(ListStargazersHandler, api_tokens=API_TOKENS, username=username, repo_name=repo_name)
+        handler = ListStargazersHandler(username=username, repo_name=repo_name)
         results = []
-        for page in range(1, 21):
-            handler = handlers.choice()
+        for page in range(1, 26):
+            users.equip_1_handler(handler)  # 代入一个用户
             handler.params['page'] = page
             response = await self.session.request_json('GET', url=handler.url, params=handler.params, headers=handler.headers)
             await asyncio.sleep(1)
@@ -107,8 +108,8 @@ async def main():
     crawler = Crawler(None)
     todo_jobs_queue = asyncio.Queue()
 
-    init_file_path = 'crawler/data_init.json'
-    result_file_path = 'crawler/data.json'
+    init_file_path = 'crawler/result/data_init.json'
+    result_file_path = 'crawler/result/data.json'
 
     if not os.path.isfile('crawler/data.json'):  # 是个存在的文件；如果存在说明已经有了初始化的数据了
         # 初始化（可以看作是第 0 层的递归深度结果）
