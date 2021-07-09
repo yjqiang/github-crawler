@@ -111,7 +111,7 @@ async def main():
     init_file_path = 'crawler/result/data_init.json'
     result_file_path = 'crawler/result/data.json'
 
-    if not os.path.isfile('crawler/data.json'):  # 是个存在的文件；如果存在说明已经有了初始化的数据了
+    if not os.path.isfile(result_file_path):  # 是个存在的文件；如果存在说明已经有了初始化的数据了
         # 初始化（可以看作是第 0 层的递归深度结果）
         if not os.path.isfile(init_file_path):  # 是个存在的文件
             results = await crawler.search_code('class nn.module in:file extension:py')  # 搜索 Github 所有仓库中，含有某关键词的仓库代码

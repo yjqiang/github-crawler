@@ -52,11 +52,11 @@ class WebSession:
                 await asyncio.sleep(1)
             try:
                 async with self.session.request(method, url, **kwargs) as rsp:
-                    print(url, rsp.status, rsp.headers.getone('X-RateLimit-Remaining', None), kwargs, rsp.url)
+                    print(f'{url=}, {rsp.status=}, X-RateLimit-Remaining={rsp.headers.getone("X-RateLimit-Remaining", None)} || {kwargs=}, {rsp.url=}')
                     if rsp.status == 200:
                         return await parse_rsp(rsp)
                     else:
-                        print(f'STATUS_CODE ERROR: {url} {rsp.status} {rsp.text} {kwargs}')
+                        print(f'STATUS_CODE ERROR: {url} {rsp.status} {await self._recv_str(rsp)} {kwargs}')
 
                     if rsp.status == 404:
                         return None
@@ -65,6 +65,7 @@ class WebSession:
                     elif rsp.status == 422:  # The listed users and repositories cannot be searched either because the resources do not exist or you do not have permission to view them.
                         return None
                     else:
+                        print("FATAL ERROR")
                         sys.exit(-1)
             except:
                 # print('当前网络不好，正在重试，请反馈开发者!!!!')
