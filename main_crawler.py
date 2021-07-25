@@ -36,7 +36,7 @@ class Crawler:
             handler.params['page'] = page
 
             response = await self.session.request_json('GET', url=handler.url, params=handler.params, headers=handler.headers)
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
 
             if not response:
                 break
@@ -70,7 +70,7 @@ class Crawler:
             users.equip_1_handler(handler)  # 代入一个用户
             handler.params['page'] = page
             response = await self.session.request_json('GET', url=handler.url, params=handler.params, headers=handler.headers)
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
 
             if not response:
                 break
