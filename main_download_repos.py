@@ -21,6 +21,7 @@ class Crawler:
     def __init__(self):
         self.session = WebSession()
         self.number_success = 0
+        self.list_results = []
 
     async def handler_one_round(self, repository_url: str) -> None:
         """
@@ -42,26 +43,27 @@ class Crawler:
             data = await self.session.request_stream('GET', url=handler.url, params=handler.params, headers=handler.headers)
 
         if data is not None:
-            with open(f'download_repos/{username}-{repo_name}.zip', 'wb') as f:
+            with open(f'download_repos/result/{username}-{repo_name}.zip', 'wb') as f:
                 f.write(data)
             print(f'DONE {username}-{repo_name}.zip')
             self.number_success += 1
+            self.list_results.append([username, repo_name, f'{username}-{repo_name}.zip'])
 
 
 async def main():
     crawler = Crawler()
     todo_jobs_queue = asyncio.Queue()
 
-    cur_result = utils.open_json('crawler/data.json')
+    cur_result = utils.open_json('crawler/result/data.json')
     list_todo_jobs = cur_result['list_results']  # 截止目前为止搜到的仓库
 
     for todo_job in list_todo_jobs:
         await todo_jobs_queue.put(todo_job)
 
     while not todo_jobs_queue.empty():
-        print(f'PREPARING and remaining: {todo_jobs_queue.qsize()} and cur_result: {crawler.number_success}')
+        print(f'PREPARING and remaining: {todo_jobs_queue.qsize()} and cur_result: {crawler.number_success}/{len(list_todo_jobs)}')
 
-        cur_max_number_of_jobs = 1
+        cur_max_number_of_jobs = 2
         cur_todo_jobs = []
         while (not todo_jobs_queue.empty()) and cur_max_number_of_jobs > 0:
             cur_todo_jobs.append(await todo_jobs_queue.get())
@@ -75,6 +77,9 @@ async def main():
         )
 
     await crawler.session.session.close()
+    utils.save_json(f'download_repos/result/data.json', {
+        'list_results': crawler.list_results,
+    })
 
 
 if __name__ == '__main__':
